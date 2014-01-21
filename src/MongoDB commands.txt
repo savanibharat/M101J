@@ -1,0 +1,46 @@
+ db.scores.find({"type":"essay"}).pretty()
+db.scores.find().forEach(printjson)
+> for(i=0;i<1000;i++){ names=["exam","essay","quiz"]; for(j=0;j<3;j++){db.scores.insert({"student":i,"type":na
+mes[j],score:Math.round(Math.random()*100)});}}
+--------------------------------------------------------------------------
+both the field in find must be satisfied
+> db.scores.find({"student":19,type:"essay"}).pretty()
+{
+        "_id" : ObjectId("52de3dd16177f5dc6e3bc2a8"),
+        "student" : 19,
+        "type" : "essay",
+        "score" : 99
+}
+>
+
+--------------------------------------------------------------------------
+ 		(--------search criteria---) (------fields to display------)			
+> db.scores.find({"student":19,type:"essay"},{score:true,_id:false}).pretty()
+{ "score" : 99 }
+> db.scores.find({"student":19,type:"essay"},{"score":true,"_id":false}).pretty()
+{ "score" : 99 }
+>
+
+--------------------------------------------------------------------------
+db.scores.find({score:{$gt :99}}).pretty() scores greater than 99 $gt is operator
+--------------------------------------------------------------------------
+score greater an 9 and type is essay
+> db.scores.find({score:{$gt :99},type:"essay"}).pretty()
+{
+        "_id" : ObjectId("52de3dd16177f5dc6e3bc5cf"),
+        "student" : 288,
+        "type" : "essay",
+        "score" : 100
+}
+{
+        "_id" : ObjectId("52de3dd16177f5dc6e3bc6b0"),
+        "student" : 363,
+        "type" : "essay",
+        "score" : 100
+}
+>
+---------------------------------------------------------------------------
+db.scores.find({score:{$gt :65,$lt:70},type:"essay"}).pretty()
+---------------------------------------------------------------------------
+db.scores.find({score:{$gte :65,$lt:70},type:"essay"}).pretty()
+---------------------------------------------------------------------------
