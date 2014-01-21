@@ -44,3 +44,111 @@ db.scores.find({score:{$gt :65,$lt:70},type:"essay"}).pretty()
 ---------------------------------------------------------------------------
 db.scores.find({score:{$gte :65,$lt:70},type:"essay"}).pretty()
 ---------------------------------------------------------------------------
+> db.people.find({profession:{$exists:true}}).pretty()
+{
+        "_id" : ObjectId("52de54f16177f5dc6e3bce2c"),
+        "name" : "Smith",
+        "age" : 30,
+        "profession" : "Hacker"
+}
+{
+        "_id" : ObjectId("52de550b6177f5dc6e3bce2d"),
+        "name" : "Jones",
+        "age" : 35,
+        "profession" : "Backer"
+}
+---------------------------------------------------------------------------
+> db.people.find({profession:{$exists:false}}).pretty()
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "name" : "Bob" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+{ "_id" : ObjectId("52de54c46177f5dc6e3bce2b"), "name" : "Fred" }
+{ "_id" : ObjectId("52de56c46177f5dc6e3bce2e"), "name" : 44 }
+---------------------------------------------------------------------------
+to get data based on datatype http://bsonspec.org/#/specification
+to get all fileds of name types of string
+> db.people.find({name:{$type:2}}).pretty()
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "name" : "Bob" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+{ "_id" : ObjectId("52de54c46177f5dc6e3bce2b"), "name" : "Fred" }
+{
+        "_id" : ObjectId("52de54f16177f5dc6e3bce2c"),
+        "name" : "Smith",
+        "age" : 30,
+        "profession" : "Hacker"
+}
+{
+        "_id" : ObjectId("52de550b6177f5dc6e3bce2d"),
+        "name" : "Jones",
+        "age" : 35,
+        "profession" : "Backer"
+}
+
+> db.people.find({name:{$type:1}}).pretty()
+{ "_id" : ObjectId("52de56c46177f5dc6e3bce2e"), "name" : 44 }
+---------------------------------------------------------------------------
+regular expression
+> db.people.find({name:{$regex:"a"}})
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+---------------------------------------------------------------------------
+Enter with letter e
+> db.people.find({name:{$regex:"e$"}})
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+---------------------------------------------------------------------------
+name field that starts with a
+> db.people.find({name:{$regex:"^A"}})
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+---------------------------------------------------------------------------
+$or is prefix operator it comes before the subqueries that will connect together
+It takes input as array
+Be careful with this kind of query as there can be syntax err
+> db.people.find({ $or :[{name:{$regex:"e$"}},{age:{$exists:true}} ]})
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54f16177f5dc6e3bce2c"), "name" : "Smith", "age" : 30, "profession" : "Hacker" }
+{ "_id" : ObjectId("52de550b6177f5dc6e3bce2d"), "name" : "Jones", "age" : 35, "profession" : "Backer" }
+---------------------------------------------------------------------------
+and operator
+> db.people.find({$and:[{name:{$gt:"C"}},{name:{$regex:"a"}}]})
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+
+> db.people.find({$and:[{name:{$gt:"A"}},{name:{$regex:"a"}}]})
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+
+below query has same output as above query but below query is better performace wise
+> db.people.find({ name:{$gt:"A",$regex:"a"}})
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+--------------------------------------------------------------------------
+> db.accounts.find().pretty()
+{
+        "_id" : ObjectId("52de657b6177f5dc6e3bce2f"),
+        "name" : "George",
+        "favorites" : [
+                "ice cream",
+                "pretzels"
+        ]
+}
+{
+        "_id" : ObjectId("52de658f6177f5dc6e3bce30"),
+        "name" : "Howard",
+        "favorites" : [
+                "pretzels",
+                "beer"
+        ]
+}
