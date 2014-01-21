@@ -1,6 +1,5 @@
 package com.tengen;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,6 +9,11 @@ import freemarker.template.Template;
 
 public class HelloWorldFreeMarkerStyle {
 
+	/**
+	 * The main method.
+	 *
+	 * @param args the arguments
+	 */
 	public static void main(String[] args) {
 
 		Configuration configuration = new Configuration();
