@@ -286,3 +286,211 @@ Howard and John are in different documents but still in will match them all
                 "cheese"
         ]
 }
+---------------------------------------------------------------------------
+> db.users.find().pretty()
+{
+        "_id" : ObjectId("52ddda816177f5dc6e3bc26d"),
+        "name" : "Aryan",
+        "location" : "Gujarat"
+}
+{
+        "_id" : ObjectId("52ddda5f6177f5dc6e3bc26c"),
+        "name" : "Bharat",
+        "favorite_color" : "white"
+}
+{
+        "_id" : ObjectId("52defaf707310b75f298ee1e"),
+        "name" : "richard",
+        "email" : {
+                "work" : "richard@10gen.com",
+                "personal" : "kreuter@example.com"
+        }
+}
+querying for sub docs remember that you need to preserve the order of
+sub docs see query 1 and 2
+1)> db.users.find({email:{work:"richard@10gen.com",personal:"kreuter@example.com"}}).pretty()
+{
+        "_id" : ObjectId("52defaf707310b75f298ee1e"),
+        "name" : "richard",
+        "email" : {
+                "work" : "richard@10gen.com",
+                "personal" : "kreuter@example.com"
+        }
+}
+2)> db.users.find({email:{personal:"kreuter@example.com",work:"richard@10gen.com"}}).pretty()
+
+how to get sub document if you dont know entire document
+> db.users.find({email.work:"richard@10gen.com"}).pretty()
+Tue Jan 21 15:16:36.098 SyntaxError: Unexpected token .
+> db.users.find({"email.work":"richard@10gen.com"}).pretty()
+{
+        "_id" : ObjectId("52defaf707310b75f298ee1e"),
+        "name" : "richard",
+        "email" : {
+                "work" : "richard@10gen.com",
+                "personal" : "kreuter@example.com"
+        }
+}
+--------------------------------------------------------------------------
+cursor in action
+> cur=db.people.find()
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "name" : "Bob" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+{ "_id" : ObjectId("52de54c46177f5dc6e3bce2b"), "name" : "Fred" }
+{ "_id" : ObjectId("52de54f16177f5dc6e3bce2c"), "name" : "Smith", "age" : 30, "profession" : "Hacker" }
+{ "_id" : ObjectId("52de550b6177f5dc6e3bce2d"), "name" : "Jones", "age" : 35, "profession" : "Backer" }
+{ "_id" : ObjectId("52de56c46177f5dc6e3bce2e"), "name" : 44 }
+> cur.hasNext()
+false
+> cur=db.people.find();null
+null
+> cur.hasNext()
+true
+> cur.next()
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+> cur.next()
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "name" : "Bob" }
+> cur.next()
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+> cur.next()
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+> cur.next()
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+> cur.next()
+{ "_id" : ObjectId("52de54c46177f5dc6e3bce2b"), "name" : "Fred" }
+> cur.next()
+{
+        "_id" : ObjectId("52de54f16177f5dc6e3bce2c"),
+        "name" : "Smith",
+        "age" : 30,
+        "profession" : "Hacker"
+}
+> cur.next()
+{
+        "_id" : ObjectId("52de550b6177f5dc6e3bce2d"),
+        "name" : "Jones",
+        "age" : 35,
+        "profession" : "Backer"
+}
+> cur.next()
+{ "_id" : ObjectId("52de56c46177f5dc6e3bce2e"), "name" : 44 }
+> cur.next()
+Tue Jan 21 15:34:57.720 error hasNext: false at src/mongo/shell/query.js:124
+
+using while loop for cursor
+> cur=db.users.find();null;
+null
+> while(cur.hasNext()) printjson(cur.next());
+{
+        "_id" : ObjectId("52ddda816177f5dc6e3bc26d"),
+        "name" : "Aryan",
+        "location" : "Gujarat"
+}
+{
+        "_id" : ObjectId("52ddda5f6177f5dc6e3bc26c"),
+        "name" : "Bharat",
+        "favorite_color" : "white"
+}
+{
+        "_id" : ObjectId("52defaf707310b75f298ee1e"),
+        "name" : "richard",
+        "email" : {
+                "work" : "richard@10gen.com",
+                "personal" : "kreuter@example.com"
+        }
+}
+Remember once the cursor has travered the documents in collection it becomes null
+so you need to define it again then only it will point to first document again
+
+limit cursor to limited records
+> cur=db.people.find();null;
+null
+> cur.limit(5)
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "name" : "Bob" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+> cur=db.people.find();null;
+null
+> cur.limit(5);null;
+null
+> while(cur.hasNext()) { printjson(cur.next())}
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "name" : "Bob" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+
+when u use limit he server will sent only that many records and not all
+
+sort names reversely
+cur.sort({name:-1});null;
+> cur=db.people.find();null;
+null
+> cur.sort({name:-1});null;
+null
+> while(cur.hasNext()){printjson(cur.next())}
+{
+        "_id" : ObjectId("52de54f16177f5dc6e3bce2c"),
+        "name" : "Smith",
+        "age" : 30,
+        "profession" : "Hacker"
+}
+{
+        "_id" : ObjectId("52de550b6177f5dc6e3bce2d"),
+        "name" : "Jones",
+        "age" : 35,
+        "profession" : "Backer"
+}
+{ "_id" : ObjectId("52de54c46177f5dc6e3bce2b"), "name" : "Fred" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "name" : "Bob" }
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+{ "_id" : ObjectId("52de56c46177f5dc6e3bce2e"), "name" : 44 }
+
+sort and limit the records
+
+> cur=db.people.find();null;
+null
+> cur.sort({name:-1}).limit(5);null;
+null
+> while(cur.hasNext()){printjson(cur.next())}
+{
+        "_id" : ObjectId("52de54f16177f5dc6e3bce2c"),
+        "name" : "Smith",
+        "age" : 30,
+        "profession" : "Hacker"
+}
+{
+        "_id" : ObjectId("52de550b6177f5dc6e3bce2d"),
+        "name" : "Jones",
+        "age" : 35,
+        "profession" : "Backer"
+}
+{ "_id" : ObjectId("52de54c46177f5dc6e3bce2b"), "name" : "Fred" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+
+using limit sort and skip
+execution order if sort then skip then limit
+> cur=db.people.find();null;
+null
+> cur.sort({name:-1}).limit(3).skip(2);null;
+null
+> while(cur.hasNext()){printjson(cur.next())}
+{ "_id" : ObjectId("52de54c46177f5dc6e3bce2b"), "name" : "Fred" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+-----------------------------------------------------------------------
+counting docs
+> db.scores.find({type:"exam"}).count()
+1000
+> db.scores.count()
+3000
+-----------------------------------------------------------------------
