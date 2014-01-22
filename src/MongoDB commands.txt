@@ -626,3 +626,128 @@ addToSet
 > db.arrays.update({_id:0},{$addToSet:{a:5}})
 > db.arrays.find().forEach(printjson)
 { "_id" : 0, "a" : [ 2, 4, 6, 1, 98, 5 ] }
+----------------------------------------------------------------------
+multi update
+yielding is done in multi update
+So when the data set is been updated for instance 3 docs are updated and then 
+some other request can update some docs then the thread will again continue with
+its update then again another process can update and so on can go on
+MongoDB does not offer isolated transaction 
+
+> db.people.update({},{$set:{title:"Dr"}},{multi:true})
+> db.people.find().pretty()
+{
+        "_id" : ObjectId("52de54f16177f5dc6e3bce2c"),
+        "name" : "Thompson",
+        "salary" : 50000,
+        "title" : "Dr"
+}
+{
+        "_id" : ObjectId("52de550b6177f5dc6e3bce2d"),
+        "age" : 35,
+        "name" : "Jones",
+        "title" : "Dr"
+}
+{
+        "_id" : ObjectId("52de54b76177f5dc6e3bce28"),
+        "name" : "Charlie",
+        "title" : "Dr"
+}
+{
+        "_id" : ObjectId("52de54bb6177f5dc6e3bce29"),
+        "name" : "Dave",
+        "title" : "Dr"
+}
+{
+        "_id" : ObjectId("52de54c06177f5dc6e3bce2a"),
+        "name" : "Edgar",
+        "title" : "Dr"
+}
+{
+        "_id" : ObjectId("52de54c46177f5dc6e3bce2b"),
+        "name" : "Fred",
+        "title" : "Dr"
+}
+{
+        "_id" : ObjectId("52de56c46177f5dc6e3bce2e"),
+        "name" : 44,
+        "title" : "Dr"
+}
+{
+        "_id" : ObjectId("52de54a56177f5dc6e3bce26"),
+        "age" : 31,
+        "name" : "Alice",
+        "title" : "Dr"
+}
+{
+        "_id" : ObjectId("52de54b36177f5dc6e3bce27"),
+        "age" : 1,
+        "name" : "Bob",
+        "title" : "Dr"
+}
+{
+        "_id" : ObjectId("52df7c2507310b75f298ee1f"),
+        "age" : 40,
+        "name" : "George",
+        "title" : "Dr"
+}
+{
+        "_id" : ObjectId("52df7c3b07310b75f298ee20"),
+        "name" : "William",
+        "title" : "Dr"
+}
+How would you give every record whose score was less than 70 an extra 20 points?
+db.scores.update( { score : { $lt: 70 } } , { $inc : { score : 20 } } , { multi : true } );
+----------------------------------------------------------------------------
+remove operation
+> db.people.remove({name:"Alice"})
+> db.people.find()
+{ "_id" : ObjectId("52de54f16177f5dc6e3bce2c"), "name" : "Thompson", "salary" : 50000, "title" : "Dr" }
+{ "_id" : ObjectId("52de550b6177f5dc6e3bce2d"), "age" : 35, "name" : "Jones", "title" : "Dr" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie", "title" : "Dr" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave", "title" : "Dr" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar", "title" : "Dr" }
+{ "_id" : ObjectId("52de54c46177f5dc6e3bce2b"), "name" : "Fred", "title" : "Dr" }
+{ "_id" : ObjectId("52de56c46177f5dc6e3bce2e"), "name" : 44, "title" : "Dr" }
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "age" : 1, "name" : "Bob", "title" : "Dr" }
+{ "_id" : ObjectId("52df7c2507310b75f298ee1f"), "age" : 40, "name" : "George", "title" : "Dr" }
+{ "_id" : ObjectId("52df7c3b07310b75f298ee20"), "name" : "William", "title" : "Dr" }
+
+> db.people.remove({name:{$gt:"M"}}
+... )
+> db.people.find()
+{ "_id" : ObjectId("52de550b6177f5dc6e3bce2d"), "age" : 35, "name" : "Jones", "title" : "Dr" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie", "title" : "Dr" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave", "title" : "Dr" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar", "title" : "Dr" }
+{ "_id" : ObjectId("52de54c46177f5dc6e3bce2b"), "name" : "Fred", "title" : "Dr" }
+{ "_id" : ObjectId("52de56c46177f5dc6e3bce2e"), "name" : 44, "title" : "Dr" }
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "age" : 1, "name" : "Bob", "title" : "Dr" }
+{ "_id" : ObjectId("52df7c2507310b75f298ee1f"), "age" : 40, "name" : "George", "title" : "Dr" }
+
+db.people.remove()-this will remove all the documents one by one until no documents are left
+but index are not removed
+db.people.drop()-this will free up large space of data structure stored, index are also dropped
+so drop is better than remove
+----------------------------------------------------------------------------
+
+> db.people.update({},{$set:{title:"Dr"}},{multi:true})
+> db.runCommand({getLastError:1})
+{
+        "updatedExisting" : true,
+        "n" : 8,//means 8 docs were affected
+        "connectionId" : 1,
+        "err" : null,
+        "ok" : 1
+}
+> db.people.update({name:"Thompson"},{$set:{title:"Dr"}},{upsert:true});
+> db.runCommand({getLastError:1})
+{
+        "updatedExisting" : false,//no doc were found that were in search criteria
+        "upserted" : ObjectId("52df842d57843412d05c4135"),
+        "n" : 1,//one doc got upserted
+        "connectionId" : 1,
+        "err" : null,
+        "ok" : 1
+}
+
