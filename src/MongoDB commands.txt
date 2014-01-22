@@ -494,3 +494,135 @@ counting docs
 > db.scores.count()
 3000
 -----------------------------------------------------------------------
+
+update operation
+> db.people.find().pretty()
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "name" : "Bob" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+{ "_id" : ObjectId("52de54c46177f5dc6e3bce2b"), "name" : "Fred" }
+{
+        "_id" : ObjectId("52de54f16177f5dc6e3bce2c"),
+        "name" : "Smith",
+        "age" : 30,
+        "profession" : "Hacker"
+}
+{
+        "_id" : ObjectId("52de550b6177f5dc6e3bce2d"),
+        "name" : "Jones",
+        "age" : 35,
+        "profession" : "Backer"
+}
+
+> db.people.update({name:"Smith"},{name:"Thompson",salary:50000})
+> db.people.find().pretty()
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "name" : "Alice" }
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "name" : "Bob" }
+{ "_id" : ObjectId("52de54b76177f5dc6e3bce28"), "name" : "Charlie" }
+{ "_id" : ObjectId("52de54bb6177f5dc6e3bce29"), "name" : "Dave" }
+{ "_id" : ObjectId("52de54c06177f5dc6e3bce2a"), "name" : "Edgar" }
+{ "_id" : ObjectId("52de54c46177f5dc6e3bce2b"), "name" : "Fred" }
+{
+        "_id" : ObjectId("52de54f16177f5dc6e3bce2c"),
+        "name" : "Thompson",
+        "salary" : 50000
+}
+{
+        "_id" : ObjectId("52de550b6177f5dc6e3bce2d"),
+        "name" : "Jones",
+        "age" : 35,
+        "profession" : "Backer"
+}
+{ "_id" : ObjectId("52de56c46177f5dc6e3bce2e"), "name" : 44 }
+
+update without replacing entire document
+> db.people.update({name:"Alice"},{$set:{age:30} })
+> db.people.find({name:"Alice"})
+{ "_id" : ObjectId("52de54a56177f5dc6e3bce26"), "age" : 30, "name" : "Alice" }
+
+> db.people.update({name:"Alice"},{$inc :{age:1} })
+> db.people.find({name:"Alice"}).pretty()
+{
+        "_id" : ObjectId("52de54a56177f5dc6e3bce26"),
+        "age" : 31,
+        "name" : "Alice"
+}
+what if the value to be incremented does not exists
+> db.people.update({name:"Bob"},{$inc :{age:1} })
+> db.people.find({name:"Bob"}).pretty()
+{ "_id" : ObjectId("52de54b36177f5dc6e3bce27"), "age" : 1, "name" : "Bob" }
+---------------------------------------------------------------------------
+how to unset particular field in document
+> db.people.update({name:"Jones"},{$unset:{profession:1}})
+do same for arrays
+---------------------------------------------------------------------------
+insert arrays and do operations on them
+> db.arrays.insert({_id:0,a:[1,2,3,4,5]})
+> db.arrays.find()
+{ "_id" : 0, "a" : [  1,  2,  3,  4,  5 ] }
+update value in array with index 2 and position 3
+> db.arrays.update({_id:0},{$set:{"a.2":5}} )
+> db.arrays.find().forEach(printjson)
+{ "_id" : 0, "a" : [ 1, 2, 5, 4, 5 ] }
+
+push element means insert element at end of array
+> db.arrays.update({_id:0},{$push:{a:6}})
+> db.arrays.find().forEach(printjson)
+{ "_id" : 0, "a" : [ 1, 2, 5, 4, 5, 6 ] }
+{ "_id" : 0, "a" : [ 1, 2, 5, 4, 5, 6 ] }
+> db.arrays.update({_id:0},{$push:{a:1}})
+> db.arrays.find().forEach(printjson)
+{ "_id" : 0, "a" : [ 1, 2, 5, 4, 5, 6, 1 ] }
+> db.arrays.update({_id:0},{$push:{a:90}})
+> db.arrays.find().forEach(printjson)
+{ "_id" : 0, "a" : [ 1, 2, 5, 4, 5, 6, 1, 90 ] }
+
+> db.arrays.update({_id:0},{$pop:{a:90}})
+> db.arrays.find().forEach(printjson)
+{ "_id" : 0, "a" : [ 1, 2, 5, 4, 5, 6, 1 ] }
+
+pop from begining of array
+> db.arrays.update({_id:0},{$pop:{a:-1}})
+> db.arrays.find().forEach(printjson)
+{ "_id" : 0, "a" : [ 2, 5, 4, 5, 6, 1 ] }
+
+pushAll method
+
+> db.arrays.update({_id:0},{$pushAll:{a:[96,98,91,82]}})
+> db.arrays.find().forEach(printjson)
+{
+        "_id" : 0,
+        "a" : [
+                2,
+                5,
+                4,
+                5,
+                6,
+                1,
+                96,
+                98,
+                91,
+                82
+        ]
+}
+pull 
+> db.arrays.update({_id:0},{$pull:{a:82}})
+> db.arrays.find().forEach(printjson)
+{ "_id" : 0, "a" : [ 2, 5, 4, 5, 6, 1, 96, 98, 91 ] }
+
+pullAll
+> db.arrays.update({_id:0},{$pullAll:{a:[96,97,91,5]}})
+> db.arrays.find().forEach(printjson)
+{ "_id" : 0, "a" : [ 2, 4, 6, 1, 98 ] }
+
+addToSet
+> db.arrays.update({_id:0},{$addToSet:{a:5}})
+> db.arrays.find().forEach(printjson)
+{ "_id" : 0, "a" : [ 2, 4, 6, 1, 98, 5 ] }
+> db.arrays.update({_id:0},{$addToSet:{a:5}})
+> db.arrays.update({_id:0},{$addToSet:{a:5}})
+> db.arrays.update({_id:0},{$addToSet:{a:5}})
+> db.arrays.find().forEach(printjson)
+{ "_id" : 0, "a" : [ 2, 4, 6, 1, 98, 5 ] }
