@@ -40,9 +40,9 @@ public class FindCriteriaTest {
 
 		// DBObject query=new BasicDBObject("x",0);
 
-		DBObject query = new BasicDBObject("x", 0)
+		/*DBObject query = new BasicDBObject("x", 0)
 												.append("y",new BasicDBObject("$gt", 10).append("$lt", 90));//This is bit tedious way to query
-		
+		*/
 		//Another way to run a query is Using QueryBuilder
 
 		QueryBuilder queryBuilder=QueryBuilder.start("x").is(0).and("y").greaterThan(10).lessThan(90);
