@@ -750,4 +750,94 @@ so drop is better than remove
         "err" : null,
         "ok" : 1
 }
+-------------------------------------------------------------------------------
+indexing
+> db.bbb.insert({a:1,b:2})
+> db.bbb.find().pretty()
+{ "_id" : ObjectId("52e4bf45c7cb70d6c2dc2e6a"), "a" : 1, "b" : 2 }
+> db.bbb.ensureIndex({a:1,b:2})
+> db.bbb.getIndexes()
+[
+        {
+                "v" : 1,
+                "key" : {
+                        "_id" : 1
+                },
+                "ns" : "course.bbb",
+                "name" : "_id_"
+        },
+        {
+                "v" : 1,
+                "key" : {
+                        "a" : 1,
+                        "b" : 2
+                },
+                "ns" : "course.bbb",
+                "name" : "a_1_b_2"
+        }
+]
+> db.bbb.insert({a:[1,2,3],b:2})
+> db.bbb.find().pretty()
+{ "_id" : ObjectId("52e4bf45c7cb70d6c2dc2e6a"), "a" : 1, "b" : 2 }
+{
+        "_id" : ObjectId("52e4c1a3c7cb70d6c2dc2e6c"),
+        "a" : [
+                1,
+                2,
+                3
+        ],
+        "b" : 2
+}
+> db.bbb.ensureIndex({a:1,b:[100,101,102]})
+{
+        "err" : "bad index key pattern { a: 1.0, b: [ 100.0, 101.0, 102.0 ] }",
+        "code" : 10098,
+        "n" : 0,
+        "connectionId" : 1,
+        "ok" : 1
+}
+> db.bbb.insert({a:1,b:[100,200,300]})
+> db.bbb.find().pretty()
+{ "_id" : ObjectId("52e4bf45c7cb70d6c2dc2e6a"), "a" : 1, "b" : 2 }
+{
+        "_id" : ObjectId("52e4c1a3c7cb70d6c2dc2e6c"),
+        "a" : [
+                1,
+                2,
+                3
+        ],
+        "b" : 2
+}
+{
+        "_id" : ObjectId("52e4c1dbc7cb70d6c2dc2e6e"),
+        "a" : 1,
+        "b" : [
+                100,
+                200,
+                300
+        ]
+}
+> db.bbb.getInddexes()
+Sun Jan 26 00:06:09.116 TypeError: Property 'getInddexes' of object course.bbb is not a function
 
+
+> db.bbb.getIndexes()
+[
+        {
+                "v" : 1,
+                "key" : {
+                        "_id" : 1
+                },
+                "ns" : "course.bbb",
+                "name" : "_id_"
+        },
+        {
+                "v" : 1,
+                "key" : {
+                        "a" : 1,
+                        "b" : 2
+                },
+                "ns" : "course.bbb",
+                "name" : "a_1_b_2"
+        }
+]
