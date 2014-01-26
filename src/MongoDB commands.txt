@@ -841,3 +841,57 @@ Sun Jan 26 00:06:09.116 TypeError: Property 'getInddexes' of object course.bbb i
                 "name" : "a_1_b_2"
         }
 ]
+-------------------------------------------------------------------------------
+> db.things.insert({"things":"pear","color":"red"})
+> db.things.find()
+{ "_id" : ObjectId("52e4cea2c7cb70d6c2dc2e6f"), "things" : "pear", "color" : "red" }
+> db.things.insert({"things":"pear","color":"white"})
+> db.things.insert({"things":"apple","color":"white"})
+> db.things.find()
+{ "_id" : ObjectId("52e4cea2c7cb70d6c2dc2e6f"), "things" : "pear", "color" : "red" }
+{ "_id" : ObjectId("52e4ceb9c7cb70d6c2dc2e70"), "things" : "pear", "color" : "white" }
+{ "_id" : ObjectId("52e4cebec7cb70d6c2dc2e71"), "things" : "apple", "color" : "white" }
+> db.things.ensureIndex({things:1},{unique:true})
+{
+        "err" : "E11000 duplicate key error index: course.things.$things_1  dup key: { : \"pear\" }",
+        "code" : 11000,
+        "n" : 0,
+        "connectionId" : 1,
+        "ok" : 1
+}
+> db.things.ensureIndex({things:1},{unique:true,dropDups:true})
+> db.things.find()
+{ "_id" : ObjectId("52e4cea2c7cb70d6c2dc2e6f"), "things" : "pear", "color" : "red" }
+{ "_id" : ObjectId("52e4cebec7cb70d6c2dc2e71"), "things" : "apple", "color" : "white" }
+> db.things.find().pretty()
+{
+        "_id" : ObjectId("52e4cea2c7cb70d6c2dc2e6f"),
+        "things" : "pear",
+        "color" : "red"
+}
+{
+        "_id" : ObjectId("52e4cebec7cb70d6c2dc2e71"),
+        "things" : "apple",
+        "color" : "white"
+}
+> db.things.getIndexes()
+[
+        {
+                "v" : 1,
+                "key" : {
+                        "_id" : 1
+                },
+                "ns" : "course.things",
+                "name" : "_id_"
+        },
+        {
+                "v" : 1,
+                "key" : {
+                        "things" : 1
+                },
+                "unique" : true,
+                "ns" : "course.things",
+                "name" : "things_1",
+                "dropDups" : true
+        }
+]
