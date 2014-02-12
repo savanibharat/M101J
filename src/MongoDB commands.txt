@@ -895,3 +895,139 @@ Sun Jan 26 00:06:09.116 TypeError: Property 'getInddexes' of object course.bbb i
                 "dropDups" : true
         }
 ]
+-----------------------------------------------------------------------------------
+> db.things.find({"things":"pear"})
+{ "_id" : ObjectId("52e4cea2c7cb70d6c2dc2e6f"), "things" : "pear", "color" : "red" }
+
+cursor type is Btree as the indexing is done on things field
+isMultiKey -- false because there is no array in index
+nscanned -- 1 means we directly found that data
+indexOnly -- 
+
+> db.things.find({"things":"pear"}).explain()
+{
+        "cursor" : "BtreeCursor things_1",
+        "isMultiKey" : false,
+        "n" : 1,
+        "nscannedObjects" : 1,
+        "nscanned" : 1,
+        "nscannedObjectsAllPlans" : 1,
+        "nscannedAllPlans" : 1,
+        "scanAndOrder" : false,
+        "indexOnly" : false,
+        "nYields" : 0,
+        "nChunkSkips" : 0,
+        "millis" : 0,
+        "indexBounds" : {
+                "things" : [
+                        [
+                                "pear",
+                                "pear"
+                        ]
+                ]
+        },
+        "server" : "SavaniBharat:27017"
+}
+Index not used as indexing is done on things and not on color
+> db.things.find({"color":"red"}).explain()
+{
+        "cursor" : "BasicCursor",
+        "isMultiKey" : false,
+        "n" : 1,
+        "nscannedObjects" : 2,
+        "nscanned" : 2,
+        "nscannedObjectsAllPlans" : 2,
+        "nscannedAllPlans" : 2,
+        "scanAndOrder" : false,
+        "indexOnly" : false,
+        "nYields" : 0,
+        "nChunkSkips" : 0,
+        "millis" : 0,
+        "indexBounds" : {
+
+        },
+        "server" : "SavaniBharat:27017"
+}
+-----------------------------------------------------------------
+> db.scores.count()
+3000
+
+avgObjSize-72 bytes
+storageSize-0.664MB
+
+> db.scores.stats()
+{
+        "ns" : "course.scores",
+        "count" : 3000,
+        "size" : 216008,
+        "avgObjSize" : 72.00266666666667,
+        "storageSize" : 696320,
+        "numExtents" : 4,
+        "nindexes" : 1,
+        "lastExtentSize" : 524288,
+        "paddingFactor" : 1,
+        "systemFlags" : 1,
+        "userFlags" : 0,
+        "totalIndexSize" : 106288,
+        "indexSizes" : {
+                "_id_" : 106288
+        },
+        "ok" : 1
+}
+Index size - 0.101 MB
+> db.scores.totalIndexSize()
+106288
+> db.scores.getIndexes()
+[
+        {
+                "v" : 1,
+                "key" : {
+                        "_id" : 1
+                },
+                "ns" : "course.scores",
+                "name" : "_id_"
+        }
+]
+
+
+> db.scores.find({student:0,type:"exam"})
+{ "_id" : ObjectId("52de3dd16177f5dc6e3bc26e"), "student" : 0, "type" : "exam", "score" : 94 }
+> db.scores.find({student:0,type:"exam"}).explain()
+{
+        "cursor" : "BasicCursor",
+        "isMultiKey" : false,
+        "n" : 1,
+        "nscannedObjects" : 3000,
+        "nscanned" : 3000,
+        "nscannedObjectsAllPlans" : 3000,
+        "nscannedAllPlans" : 3000,
+        "scanAndOrder" : false,
+        "indexOnly" : false,
+        "nYields" : 0,
+        "nChunkSkips" : 0,
+        "millis" : 3,
+        "indexBounds" : {
+
+        },
+        "server" : "SavaniBharat:27017"
+}
+
+> db.scores.find({student:0,type:"exam"}).hint({$natural:1}).explain()
+{
+        "cursor" : "BasicCursor",
+        "isMultiKey" : false,
+        "n" : 1,
+        "nscannedObjects" : 3000,
+        "nscanned" : 3000,
+        "nscannedObjectsAllPlans" : 3000,
+        "nscannedAllPlans" : 3000,
+        "scanAndOrder" : false,
+        "indexOnly" : false,
+        "nYields" : 0,
+        "nChunkSkips" : 0,
+        "millis" : 3,
+        "indexBounds" : {
+
+        },
+        "server" : "SavaniBharat:27017"
+}
