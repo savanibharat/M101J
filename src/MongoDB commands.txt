@@ -1031,3 +1031,221 @@ Index size - 0.101 MB
         },
         "server" : "SavaniBharat:27017"
 }
+------------------------------------------------------------------------------------------
+> db.stores.insert({"name":"Rubys","type":"Barber","location":[40,74]})
+> db.stores.find()
+{ "_id" : ObjectId("52fb126e4beaef12923e82b6"), "name" : "Rubys", "type" : "Barber", "location" : [  40,  74 ]
+ }
+> db.stores.insert({"name":"ACE hardware","type":"Hardware","location":[40.232,-74.373]})
+> db.stores.insert({"name":"Trickle Candy","type":"Food","location":[40.232,-75.343]})
+> db.stores.find().pretty()
+{
+        "_id" : ObjectId("52fb126e4beaef12923e82b6"),
+        "name" : "Rubys",
+        "type" : "Barber",
+        "location" : [
+                40,
+                74
+        ]
+}
+{
+        "_id" : ObjectId("52fb12b94beaef12923e82b7"),
+        "name" : "ACE hardware",
+        "type" : "Hardware",
+        "location" : [
+                40.232,
+                -74.373
+        ]
+}
+{
+        "_id" : ObjectId("52fb12dd4beaef12923e82b8"),
+        "name" : "Trickle Candy",
+        "type" : "Food",
+        "location" : [
+                40.232,
+                -75.343
+        ]
+}
+
+> db.stores.ensureIndex({"location":"2d",type:1})
+> db.stores.getIndexes()
+[
+        {
+                "v" : 1,
+                "key" : {
+                        "_id" : 1
+                },
+                "ns" : "course.stores",
+                "name" : "_id_"
+        },
+        {
+                "v" : 1,
+                "key" : {
+                        "location" : "2d",
+                        "type" : 1
+                },
+                "ns" : "course.stores",
+                "name" : "location_2d_type_1"
+        }
+]
+
+GeoSpatial Index 2D
+
+	|
+   -,+	|   +,+
+________|________
+   -,-	|   +,-
+	|
+	|
+
+
+> db.stores.find({"location":{"$near":[50,50]}}).pretty()
+{
+        "_id" : ObjectId("52fb126e4beaef12923e82b6"),
+        "name" : "Rubys",
+        "type" : "Barber",
+        "location" : [
+                40,
+                74
+        ]
+}
+{
+        "_id" : ObjectId("52fb12b94beaef12923e82b7"),
+        "name" : "ACE hardware",
+        "type" : "Hardware",
+        "location" : [
+                40.232,
+                -74.373
+        ]
+}
+{
+        "_id" : ObjectId("52fb12dd4beaef12923e82b8"),
+        "name" : "Trickle Candy",
+        "type" : "Food",
+        "location" : [
+                40.232,
+                -75.343
+        ]
+}
+
+> db.stores.find({"location":{"$near":[1000,1000]}}).pretty()
+error: {
+        "$err" : "point not in interval of [ -180, 180 ] :: caused by :: { 0: 1000.0, 1: 1000.0 }",
+        "code" : 16433
+}
+
+Suppose you have a 2D geospatial index defined on the key location in the collection places. Write a query that will 
+find the closest three places (the closest three documents) to the location 74, 140.
+
+db.places.find({"location":{"$near":[74,140]}}).limit(3)
+
+-----------------------------------------------------------------------------------------------------------------
+Geospacial Spherical
+> db.runCommand({geoNear:"stores",near:[50,50],spherical:true, maxDistance:1})
+{
+        "ns" : "course.stores",
+        "near" : "1100110000001111110000001111110000001111110000001111",
+        "results" : [
+                {
+                        "dis" : 0.4254484117584905,
+                        "obj" : {
+                                "_id" : ObjectId("52fb126e4beaef12923e82b6"),
+                                "name" : "Rubys",
+                                "type" : "Barber",
+                                "location" : [
+                                        40,
+                                        74
+                                ]
+                        }
+                }
+        ],
+        "stats" : {
+                "time" : 41,
+                "btreelocs" : 0,
+                "nscanned" : 3,
+                "objectsLoaded" : 1,
+                "avgDistance" : 0.4254484117584905,
+                "maxDistance" : 0.42544860556639313
+        },
+        "ok" : 1
+}
+
+> db.runCommand({geoNear:"stores",near:[50,50],spherical:true, maxDistance:3})
+{
+        "ns" : "course.stores",
+        "near" : "1100110000001111110000001111110000001111110000001111",
+        "results" : [
+                {
+                        "dis" : 0.4254484117584905,
+                        "obj" : {
+                                "_id" : ObjectId("52fb126e4beaef12923e82b6"),
+                                "name" : "Rubys",
+                                "type" : "Barber",
+                                "location" : [
+                                        40,
+                                        74
+                                ]
+                        }
+                },
+                {
+                        "dis" : 2.173762779893763,
+                        "obj" : {
+                                "_id" : ObjectId("52fb12b94beaef12923e82b7"),
+                                "name" : "ACE hardware",
+                                "type" : "Hardware",
+                                "location" : [
+                                        40.232,
+                                        -74.373
+                                ]
+                        }
+                },
+                {
+                        "dis" : 2.190541659436427,
+                        "obj" : {
+                                "_id" : ObjectId("52fb12dd4beaef12923e82b8"),
+                                "name" : "Trickle Candy",
+                                "type" : "Food",
+                                "location" : [
+                                        40.232,
+                                        -75.343
+                                ]
+                        }
+                }
+        ],
+        "stats" : {
+                "time" : 0,
+                "btreelocs" : 0,
+                "nscanned" : 3,
+                "objectsLoaded" : 3,
+                "avgDistance" : 1.5965842836962267,
+                "maxDistance" : 2.190542002686998
+        },
+        "ok" : 1
+}
+
+Write the query to look in the system profile collection for all queries that took longer than one second, ordered by 
+timestamp descending.
+
+db.system.profile.find({millis:{$gt:1000}}).sort({ts:-1})
+
+----------------------------------------------------------------------------------------------------------------------
+mongostat
+C:\Users\Savani Bharat>mongostat
+connected to: 127.0.0.1
+insert  query update delete getmore command flushes mapped  vsize    res faults  locked db idx miss %     qr|q
+w   ar|aw  netIn netOut  conn       time
+    *0     *0     *0     *0       0     1|0       0   448m  1.02g    46m      1  test:0.0%          0       0|
+0     0|0    62b     3k     1   00:20:26
+    *0     *0     *0     *0       0     1|0       0   448m  1.02g    46m      0  test:0.0%          0       0|
+0     0|0    62b     3k     1   00:20:27
+    *0     *0     *0     *0       0     1|0       0   448m  1.02g    46m      0  test:0.0%          0       0|
+0     0|0    62b     3k     1   00:20:28
+    *0     *0     *0     *0       0     1|0       0   448m  1.02g    46m      0  test:0.0%          0       0|
+0     0|0    62b     3k     1   00:20:29
+    *0     *0     *0     *0       0     1|0       0   448m  1.02g    46m      0  test:0.0%          0       0|
+0     0|0    62b     3k     1   00:20:30
+    *0     *0     *0     *0       0     1|0       0   448m  1.02g    46m      0  test:0.0%          0       0|
+0     0|0    62b     3k     1   00:20:31
+    *0     *0     *0     *0       0     1|0       0   448m  1.02g    46m      0  test:0.0%          0       0|
+0     0|0    62b     3k     1   00:20:32
+^C
