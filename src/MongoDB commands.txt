@@ -1249,3 +1249,61 @@ w   ar|aw  netIn netOut  conn       time
     *0     *0     *0     *0       0     1|0       0   448m  1.02g    46m      0  test:0.0%          0       0|
 0     0|0    62b     3k     1   00:20:32
 ^C
+---------------------------------------------------------------------------
+> db.students.insert({"_id":0,"name":"Andrew","teachers":[0,1]})
+>
+>
+>
+> db.students.insert({"_id":1,"name":"Richard","teachers":[0,1,3]})
+>
+>
+>
+> db.students.insert({"_id":2,"name":"Eliot","teachers":[1,2,3]})
+> db.students.insert({"_id":3,"name":"Mark","teachers":[0,3]})
+> db.teachers.insert({"_id":0,"name":"Mark"})
+> db.teachers.insert({"_id":1,"name":"John"})
+> db.teachers.insert({"_id":2,"name":"Bruce"})
+> db.teachers.insert({"_id":3,"name":"James"})
+> db.students.find().prettY()
+
+> db.students.find().pretty()
+{ "_id" : 0, "name" : "Andrew", "teachers" : [ 0, 1 ] }
+{ "_id" : 1, "name" : "Richard", "teachers" : [ 0, 1, 3 ] }
+{ "_id" : 2, "name" : "Eliot", "teachers" : [ 1, 2, 3 ] }
+{ "_id" : 3, "name" : "Mark", "teachers" : [ 0, 3 ] }
+> db.teachers().find().pretty()
+
+> db.teachers.find().pretty()
+{ "_id" : 0, "name" : "Mark" }
+{ "_id" : 1, "name" : "John" }
+{ "_id" : 2, "name" : "Bruce" }
+{ "_id" : 3, "name" : "James" }
+
+> db.students.find({'teachers':{'$all':[1,3]}})
+{ "_id" : 1, "name" : "Richard", "teachers" : [  0,  1,  3 ] }
+{ "_id" : 2, "name" : "Eliot", "teachers" : [  1,  2,  3 ] }
+
+> db.students.find({'teachers':{'$all':[1,3]}}).explain()
+{
+        "cursor" : "BtreeCursor teachers_1",
+        "isMultiKey" : true,
+        "n" : 2,
+        "nscannedObjects" : 3,
+        "nscanned" : 3,
+        "nscannedObjectsAllPlans" : 3,
+        "nscannedAllPlans" : 3,
+        "scanAndOrder" : false,
+        "indexOnly" : false,
+        "nYields" : 0,
+        "nChunkSkips" : 0,
+        "millis" : 0,
+        "indexBounds" : {
+                "teachers" : [
+                        [
+                                1,
+                                1
+                        ]
+                ]
+        },
+        "server" : "SavaniBharat:27017"
+}
